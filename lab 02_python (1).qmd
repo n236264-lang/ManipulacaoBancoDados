@@ -1,0 +1,190 @@
+---
+title: "lab 02_python"
+author: "Nicole Teles"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+```{python}
+# questão 1 
+
+#  É necessário os dados AIRLINE, DAY, MONTH e ARRIVAL_DELAY
+```
+
+```{r}
+# configurando python no pc
+if (!requireNamespace("reticulate", quietly = TRUE)) install.packages("reticulate")
+library(reticulate)
+py_config()
+py_module_available("pandas")
+```
+
+```{r}
+# configurando python no pc
+library(reticulate)
+py_install("pandas")
+```
+
+```{r}
+# configurando python no pc
+py_module_available("pandas")
+
+
+```
+
+```{r}
+# configurando pacotes
+reticulate::py_install(c("matplotlib", "calmap"))
+
+```
+
+```{python}
+# configurando pacotes
+
+import matplotlib.pyplot as plt #pacote do python para criar gráfico
+import calmap  # biblioteca para plotar mapa de calor estilo calendário
+
+```
+
+```{python}
+
+# questão 2
+
+import pandas as pd  # biblioteca de manipulação e análise de dados 
+
+def getStats(input, pos):
+    df = input[input['AIRLINE'].isin(["AA", "DL", "UA", "US"])]  # cria um novo dataframe filtrando apenas as companhias aereas selecionadas, isin é para verificar se o valor da coluna esta na lista fornecida
+    
+    df = df.dropna(subset=['ARRIVAL_DELAY', 'DAY', 'MONTH', 'YEAR', 'AIRLINE']) #remove valores faltantes nas colunas especificas
+    
+    grouped = df.groupby(['DAY', 'MONTH', 'YEAR', 'AIRLINE']).agg( 
+        total_voos=('AIRLINE', 'size'),
+        atraso_10=('ARRIVAL_DELAY', lambda x: (x > 10).sum())
+    ).reset_index()  # agrupa os dados por dia, mês, ano, cia e tempo de atraso, total_voos conta o total de voos, atraso_10 seleciona os voos que tiveram um tempo superior a 10 minutos de atraso, reset.index transforma os indices de agrupamento de volta em colunas normais
+    
+    grouped['percentual_atraso'] = (grouped['atraso_10'] / grouped['total_voos']) * 100
+    return grouped # calcula a porcentagem de voos atrasados mais de 10 minutos para cada grupo e retorna o dataframe com os dados dia, mes, ano, cia, total de voos, os que tiveram atraso superior a 10 minutos e o percentual de voos atrasados
+
+```
+
+```{python}
+# questao 3
+
+import pandas as pd
+
+chunks = pd.read_csv(
+    "H:/me315 labs/flights.csv",
+    usecols=['YEAR', 'MONTH', 'DAY', 'AIRLINE', 'ARRIVAL_DELAY'],
+    chunksize=100000
+) # le o arquivo flights.csv em chunks sem carregar tudo na memoria e apenas colunas especificas que serao usadas para calculos
+
+results = [] # cria uma lista para armazenas dados de cada chunk
+for chunk in chunks:
+    stats = getStats(chunk, None)
+    results.append(stats) # chama a função getStats para calcular o total de voos, os que atrasaram mais de 10 minutos e o percentual de atraso e adiciona o resultado à lista, itera sobre cada chunk
+
+flights = pd.concat(results, ignore_index=True) # une todos os dataframes em um unico e renumera o indice ignorando o antigo dos chunks
+
+```
+
+```{python}
+# questao 4
+
+def computeStats(df): # define uma função que vai receber um dataframe
+  
+    df_grouped = df.groupby(['YEAR', 'MONTH', 'DAY', 'AIRLINE'], as_index=False).agg(
+        total_voos=('total_voos', 'sum'),
+        atraso_10=('atraso_10', 'sum')
+    ) # agrupa os dados por ano, mes, dia e cia, para cada grupo soma o numero total de voos e o total que teve atraso > 10 minutos, as_index faz com que as colunas do agrupamento permaneçam como colunas e nao como indices
+    
+    df_grouped['Perc'] = df_grouped['atraso_10'] / df_grouped['total_voos'] # cria uma nova coluna onde é calculada o percentual de voos atrasados por grupo
+    
+    df_grouped['Data'] = pd.to_datetime({
+        'year': [2015] * len(df_grouped),
+        'month': df_grouped['MONTH'],
+        'day': df_grouped['DAY']
+    }) # cria uma coluna data convertendo ano, mês e dia em um objeto datetime do pandas, fixando o ano de 2015
+    
+    df_grouped['Cia'] = df_grouped['AIRLINE'] # renomeia a coluna airline por cia
+    
+    df_result = df_grouped[['Cia', 'Data', 'Perc']].sort_values(['Data', 'Cia']) # seleciona apenas as colunas desejadas e ordena por data e cia
+    
+    return df_result # retorna o dataframe final
+
+resultado = computeStats(flights) # aplica a funcao computeStats nos dados flights
+
+
+```
+
+```{python}
+# questao 5
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import calmap
+from matplotlib.colors import LinearSegmentedColormap # cria paletas de cores personalizadas
+
+in5 = resultado # cria uma variavel para armazenar o resultado da funcao getStats
+
+# Paleta de cores igual ao R
+pal = LinearSegmentedColormap.from_list("custom", ["#4575b4", "#d73027"])
+
+# Função para gerar série por companhia
+def baseCalendario(stats, cia):
+    input_df = stats[stats['Cia'] == cia].copy()
+    input_df['Data'] = pd.to_datetime(input_df['Data'])
+    series = pd.Series(input_df['Perc'].values, index=input_df['Data'])
+    return series # a funcao filtra os dados pela companhia, garante que a data seja do tipo datetime, cria uma serie do pandas que é composta pelo percentual de atraso e a data
+
+# Criar séries para cada companhia
+cAA = baseCalendario(in5, 'AA')
+cDL = baseCalendario(in5, 'DL')
+cUA = baseCalendario(in5, 'UA')
+cUS = baseCalendario(in5, 'US') # cria séries separadas de atrasos por companhia aérea, usando a função baseCalendario
+
+# Função para plotar calendário
+def plot_cal(series, title):
+    plt.figure(figsize=(14, 4))
+    calmap.calendarplot(
+        series,
+        cmap=pal,
+        fillcolor='lightgrey',
+        linewidth=0.5,
+        daylabels='MTWTFSS', 
+        dayticks=[0,2,4,6],
+        monthticks=1
+    )
+    plt.suptitle(title, fontsize=16)
+    plt.show() # define funcao para plotar o calendario de atrasos bem detalhado
+
+# Plotar os calendários
+plot_cal(cAA, "American Airlines")
+plot_cal(cDL, "Delta Airlines")
+plot_cal(cUA, "United Airlines")
+plot_cal(cUS, "US Airways") # plota o calendario para cada companhia aerea
+
+# nao saiu como o esperado e nao sei como fazer para ficar igual ao do slide
+
+```
+
+
+The `echo: false` option disables the printing of code (only output is displayed).

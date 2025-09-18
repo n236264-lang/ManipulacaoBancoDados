@@ -1,0 +1,181 @@
+---
+title: "desafio 4"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+```{r} 
+options(repos = "[https://cran.rstudio.com/](https://cran.rstudio.com/)")
+
+#mudei meu repositorio pois o antigo tava dando problema
+```
+
+```{r}
+# instalando pacotes necessários
+install.packages("stringr")
+install.packages("tidyverse")
+install.packages("ggplot")
+install.packages("leaftlet")
+library(tidyverse)
+library(stringr)
+library(ggplot)
+library(leaftlet)
+
+```
+
+```{r}
+# lendo o arquivo
+
+airports <- read_csv("dados/airports.csv")
+flights <- read_csv("dados/flights.csv")
+```
+
+```{r}
+glimpse(flights)
+# resumo dos dados
+```
+
+
+```{r}
+install.packages("dplyr")
+library(dplyr)
+```
+
+```{r}
+# criando a função
+
+trajetos_aeronave1 <- function(voos, id_aeronave) {   ## Define uma função chamada "trajetos_aeronave1" que aceita dois argumentos:
+# 1. "voos": um dataframe contendo os dados dos voos.
+# 2. "id_aeronave": o número de cauda (identificador) da aeronave a ser pesquisada.
+  
+  trajetos <- voos %>%
+    filter(!is.na(TAIL_NUMBER)) %>%  #filtra os dados com excecao dos na's
+    filter(TAIL_NUMBER == id_aeronave) %>%   #filtra apenas os valores onde as variaveis sao iguais
+    arrange(YEAR, MONTH, DAY, DEPARTURE_TIME) #ordena
+  
+  if (nrow(trajetos) == 0) {
+    warning(paste("Nenhuma aeronave encontrada com o TAIL_NUMBER:", id_aeronave))
+  }  # devolve a mensagem quando nao é encontrado nenhum resultado
+  
+  return(trajetos)
+}
+
+trajetos_exemplo <- trajetos_aeronave1(voos = flights, id_aeronave = "N431WN") # testando a funcao
+
+print(trajetos_exemplo)
+```
+
+```{r}
+# estatisticas
+
+airports_data <- read_csv("dados/airports.csv") %>%
+  select(faa = IATA_CODE, name = AIRPORT, lat = LATITUDE, lon = LONGITUDE) #seleciona apenas algumas colunas e as renomeia
+
+mapear_trajeto <- function(trajetos, airports_data) {
+  trajetos_com_coords <- trajetos %>%
+    filter(!is.na(AIR_TIME), !is.na(DISTANCE)) %>% #filtra os valores excluindo os na's
+    mutate(VELOCIDADE_MPH = DISTANCE / (AIR_TIME / 60)) %>% #faz uma alteração adicionando uma nova coluna 
+    left_join(airports_data, by = c("ORIGIN_AIRPORT" = "faa")) %>% #faz uma juncao onde a chave é aeroporto de origem
+    rename(origin_lat = lat, origin_lon = lon, origin_name = name) %>% #renomeando
+    left_join(airports_data, by = c("DESTINATION_AIRPORT" = "faa")) %>% #faz outra juncao onde a chave e o aeroporto de origem
+    rename(dest_lat = lat, dest_lon = lon, dest_name = name) %>% #renomeia
+    filter(!is.na(origin_lat), !is.na(dest_lat)) #filtra todos os valores exluindo os na's
+
+  if(nrow(trajetos_com_coords) == 0){
+    message("Não há dados de voos válidos para mapear para esta aeronave.")
+    return(NULL) #mesmo caso do anterior
+  }
+  
+# visualização
+  
+ trajetos_com_coords <- trajetos_com_coords %>%
+    mutate(espessura_linha = rescale(VELOCIDADE_MPH, to = c(2, 10)))  # Adiciona uma nova coluna chamada "espessura_linha" ao dataframe "trajetos_com_coords".
+# A função "rescale" (do pacote "scales") transforma a escala dos valores da coluna "VELOCIDADE_MPH".
+# Ela mapeia o intervalo de velocidades encontrado para um novo intervalo de 2 a 10.
+# O voo mais lento terá uma linha de espessura 2, e o mais rápido, uma espessura 10.
+
+  aeroportos_visitados <- bind_rows(
+      trajetos_com_coords %>% select(name = origin_name, lat = origin_lat, lon = origin_lon),
+      trajetos_com_coords %>% select(name = dest_name, lat = dest_lat, lon = dest_lon)
+    ) %>%
+    distinct()
+  # Cria um novo dataframe chamado "aeroportos_visitados" que conterá uma lista única de todos os aeroportos de origem e destino.
+# "bind_rows" é usado para empilhar dois dataframes. Remove as linhas duplicadas, resultando em uma lista de aeroportos únicos visitados.
+  
+limites_velocidade <- round(quantile(trajetos_com_coords$VELOCIDADE_MPH, probs = c(0.1, 0.9)))
+rotulo_legenda <- paste(limites_velocidade[1], "a", limites_velocidade[2], "mph")
+# Calcula os limites de velocidade para usar na legenda do mapa.
+# "quantile" calcula os percentis 10 (0.1) e 90 (0.9) das velocidades. Isso ajuda a mostrar uma faixa representativa, ignorando valores extremos.
+# "round" arredonda os valores para o número inteiro mais próximo.
+  
+mapa <- leaflet() %>%
+    addProviderTiles(providers$CartoDB.Positron) %>% ## Adiciona a camada de mapa base (o "fundo" do mapa). "CartoDB.Positron" é um estilo de mapa com cores claras e minimalistas.
+    addCircleMarkers(
+      data = aeroportos_visitados,
+      lng = ~lon, lat = ~lat,
+      radius = 5,
+      color = "#03F",
+      stroke = FALSE,
+      fillOpacity = 0.8,
+      popup = ~name
+    ) %>% # Adiciona marcadores circulares no mapa para cada aeroporto.
+    addSegments(
+      data = trajetos_com_coords,
+      lng1 = ~origin_lon, lat1 = ~origin_lat,
+      lng2 = ~dest_lon, lat2 = ~dest_lat,
+      weight = ~espessura_linha, # Espessura da linha baseada na velocidade
+      color = "red",
+      opacity = 0.7,
+      popup = ~paste(
+        "<b>De:</b>", ORIGIN_AIRPORT, "<b>Para:</b>", DESTINATION_AIRPORT, "<br>",
+        "<b>Distância:</b>", DISTANCE, "milhas<br>",
+        "<b>Velocidade Média:</b>", round(VELOCIDADE_MPH, 1), "mph"
+      ) # Adiciona os segmentos de linha que representam os trajetos de voo.
+    ) %>%
+    addLegend(
+      position = "bottomright",
+      title = "Velocidade Média do Voo",
+      colors = "red",
+      labels = rotulo_legenda,
+      opacity = 0.7
+    )
+ return(mapa) # Adiciona uma legenda ao mapa.
+}
+```
+
+```{r}
+# testando (meu pc esta com erro e por isso nao consigo usar umas das funções do pacote leaflet)
+
+#mapa_final <- mapear_trajeto(trajetos_exemplo, airports_data)
+
+#if (!is.null(mapa_final)) {
+ # print(mapa_final)
+#}
+```
+
+
+
+
+
+
+
+The `echo: false` option disables the printing of code (only output is displayed).

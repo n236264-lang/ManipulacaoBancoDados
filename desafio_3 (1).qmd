@@ -1,0 +1,69 @@
+---
+title: "Desafio 3 versao 1"
+author: "Nicole Teles Loureiro"
+format: pdf
+editor: visual
+warning: false
+message: false
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+```{r}
+# instalando pacotes
+
+install.packages("arrow", repos = "http://cran.us.r-project.org") #Ele é a implementação do Apache Arrow e é otimizado para lidar com grandes volumes de dados de forma muito eficiente, inclusive datasets que não cabem na memória.
+
+install.packages("jsonlite", repos = "http://cran.us.r-project.org") #Serve para converter dados entre o formato JSON (JavaScript Object Notation) e os tipos de dados do R, como listas e data frames.
+
+library(arrow)
+library(jsonlite)
+```
+
+```{r}
+# lendo o arquivo parquet
+
+iris_parquet <- read_parquet("iris.parquet")
+print(iris_parquet)
+```
+
+```{r}
+class(iris_parquet)
+```
+
+```{r}
+# lendo o arquivo json
+
+iris_json <- fromJSON("iris.json") # le o arquivo e depois transforma em um data frame
+
+print(iris_json)
+```
+
+```{r}
+class(iris_json)
+```
+
+```{r}
+# arquivo parquet: formato binario e colunar, otimizado para grandes volumes de dados, ocupa menos espaço.
+
+# arquivo json: formato de texto, lento para ler e processar especialmente em grandes volumes de dados, ocupa mais espaço.
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

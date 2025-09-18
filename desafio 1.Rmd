@@ -1,0 +1,70 @@
+---
+title: "Desafio 1"
+author: "Nicole Teles Loureiro"
+date: "2025-08-07"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r pressure, echo=FALSE}
+#read_csv()
+library(readr)
+tempo1 <- system.time({
+  flights1 <- read_csv("H:/banco de dados/flights.csv")
+})
+print(tempo1)
+
+```
+
+
+```{r}
+#read,csv()
+
+tempo1 <- system.time({
+  flights1 <- read.csv("H:/banco de dados/flights.csv")
+})
+print(tempo1)
+
+```
+
+
+```{r}
+#pyhton
+
+install.packages("reticulate")
+library(reticulate)
+# Importa pacotes Python
+pd <- import("pandas")
+time <- import("time")
+
+start <- time$time()
+df <- pd$read_csv("H:/banco de dados/flights.csv")
+end <- time$time()
+
+
+elapsed <- end - start
+print(paste("Tempo de execução:", round(elapsed, 4), "segundos"))
+
+
+
+
+```

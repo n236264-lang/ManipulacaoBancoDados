@@ -1,0 +1,209 @@
+---
+title: "Lab 06"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(dplyr)
+library(RSQLite)
+```
+
+You can add options to executable code like this
+
+```{r}
+path <- "dados"
+fname <- file.path(path, "disco.db")
+```
+
+```{r}
+# conectando ao banco de dados
+conn <- dbConnect(RSQLite::SQLite(), dbname = fname)
+```
+
+```{r}
+#listando todas as tabelas
+tabelas <- dbListTables(conn)
+print(tabelas)
+```
+```{r}
+#listando as colunas da tabela customers
+
+name_cols <- dbListFields(conn, "customers")
+print(name_cols)
+```
+```{r}
+# listando os clientes cadastrados
+
+contagem_clientes <- "SELECT COUNT(*) FROM customers"
+resultado_clientes <- dbGetQuery(conn, contagem_clientes)
+print(resultado_clientes)
+```
+
+```{r}
+# listando as cidades dos clientes
+
+cidades_clientes <- "SELECT DISTINCT city FROM customers"
+resultado_cidades <- dbGetQuery(conn, cidades_clientes)
+print(resultado_cidades)
+```
+
+```{r}
+# listando clientes agrupando por país
+contagem_pais <- "SELECT Country, COUNT(*) AS TotalClientes FROM customers
+                  GROUP BY country
+                  ORDER BY TotalClientes DESC"
+resultado_pais <- dbGetQuery(conn, contagem_pais)
+print(resultado_pais)
+```
+
+```{r}
+# usando a mesma ideia anterior mas limitando a 5 paises
+
+contagem_pais5 <- "SELECT Country, COUNT(*) AS TotalClientes FROM customers
+                  GROUP BY country
+                  ORDER BY TotalClientes DESC
+                  LIMIT 5"
+resultado_pais5 <- dbGetQuery(conn, contagem_pais5)
+print(resultado_pais5)
+```
+```{r}
+# listando os paises com 6 letras no nome
+
+paises_6_letras <- "SELECT DISTINCT Country FROM customers
+                    WHERE LENGTH(Country) = 6
+                    ORDER BY Country"
+resultado_paises_6_letras <- dbGetQuery(conn, paises_6_letras)
+print(resultado_paises_6_letras)
+```
+```{r}
+name_cols2 <- dbListFields(conn, "tracks")
+print(name_cols2)
+```
+
+```{r}
+# listando as musicas compradas por brasileiros
+
+musicas_compradas <- "SELECT DISTINCT
+    t.Name AS NomeDaMusica
+FROM
+    customers c
+JOIN
+    invoices i ON c.CustomerId = i.CustomerId
+JOIN
+    invoice_items ii ON i.InvoiceId = ii.InvoiceId
+JOIN
+    tracks t ON ii.TrackId = t.TrackId
+WHERE
+    c.Country = 'Brazil'
+ORDER BY
+    NomeDaMusica;"
+
+resultado_musicas <- dbGetQuery(conn, musicas_compradas)
+print(resultado_musicas)
+```
+```{r}
+# album mais tocado por pais
+
+album_mais_tocado <- "
+  WITH ContagemPorAlbum AS (
+  -- Passo 1: Contar faixas por álbum em cada país
+  SELECT
+      c.Country,
+      al.Title AS Album,
+      COUNT(t.TrackId) AS NumeroDeFaixas
+  FROM
+      customers c
+  JOIN invoices i ON c.CustomerId = i.CustomerId
+  JOIN invoice_items ii ON i.InvoiceId = ii.InvoiceId
+  JOIN tracks t ON ii.TrackId = t.TrackId
+  JOIN albums al ON t.AlbumId = al.AlbumId
+  GROUP BY
+      c.Country, al.Title
+),
+RankingAlbuns AS (
+  -- Passo 2: Rankear os álbuns dentro de cada país 
+  SELECT
+      Country,
+      Album,
+      NumeroDeFaixas,
+      RANK() OVER(PARTITION BY Country ORDER BY NumeroDeFaixas DESC) as Rank
+  FROM
+      ContagemPorAlbum
+)
+-- Passo 3: Selecionar apenas o Rank 1 de cada país
+SELECT
+    Country,
+    Album,
+    NumeroDeFaixas
+FROM
+    RankingAlbuns
+WHERE
+    Rank = 1
+ORDER BY
+    Country "
+
+resultado_album_mais_tocado <- dbGetQuery(conn, album_mais_tocado)
+print(resultado_album_mais_tocado)
+```
+
+```{r}
+# artista mais tocado por pais
+
+artista_mais_tocado <- "
+  WITH ContagemPorArtista AS (
+    -- Passo 1: Contar faixas por ARTISTA em cada país
+    SELECT
+        c.Country,
+        ar.Name AS Artista,
+        COUNT(t.TrackId) AS NumeroDeFaixas
+    FROM
+        customers c
+    JOIN invoices i ON c.CustomerId = i.CustomerId
+    JOIN invoice_items ii ON i.InvoiceId = ii.InvoiceId
+    JOIN tracks t ON ii.TrackId = t.TrackId
+    JOIN albums al ON t.AlbumId = al.AlbumId
+    JOIN artists ar ON al.ArtistId = ar.ArtistId -- Join com a tabela de artistas
+    GROUP BY
+        c.Country, ar.Name -- Agrupamento por país e NOME DO ARTISTA
+  ),
+  RankingArtistas AS (
+    -- Passo 2: Rankear os artistas dentro de cada país
+    SELECT
+        Country,
+        Artista,
+        NumeroDeFaixas,
+        RANK() OVER(PARTITION BY Country ORDER BY NumeroDeFaixas DESC) as Rank
+    FROM
+        ContagemPorArtista
+  )
+  -- Passo 3: Selecionar apenas o Rank 1 de cada país
+  SELECT
+      Country,
+      Artista,
+      NumeroDeFaixas
+  FROM
+      RankingArtistas
+  WHERE
+      Rank = 1
+  ORDER BY
+      Country
+"
+
+resultado_artista_mais_tocado <- dbGetQuery(conn, artista_mais_tocado)
+print(resultado_artista_mais_tocado)
+```
+```{r}
+dbDisconnect(conn)
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
