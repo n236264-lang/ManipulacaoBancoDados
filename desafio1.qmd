@@ -1,0 +1,51 @@
+---
+title: "desafio1"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+
+
+You can add options to executable code like this
+
+```{r}
+library(readr)
+library(reticulate)
+py_install("pandas")
+```
+
+```{r}
+tempo_base_r <- system.time({
+  dados_base_r <- read.csv("dados/flights.csv")
+})
+
+print(tempo_base_r)
+
+rm(dados_readr)
+gc()
+```
+
+```{r}
+
+# funcao mais rapida
+tempo_readr <- system.time({
+  dados_readr <- read_csv("dados/flights.csv")
+})
+
+cat("Tempo de execução com readr::read_csv():\n")
+print(tempo_readr)
+
+rm(dados_readr)
+gc()
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
