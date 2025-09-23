@@ -3,6 +3,9 @@ title: "Desafio 8"
 author: "Nicole Teles Loureiro"
 format: html
 editor: visual
+date: today 
+date-format: "D [de] MMMM [de] YYYY" 
+
 ---
 
 ## Quarto
