@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nicole Teles Loureiro">
+
+<title>Desafio 8</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="desafio8_files/libs/clipboard/clipboard.min.js"></script>
+<script src="desafio8_files/libs/quarto-html/quarto.js"></script>
+<script src="desafio8_files/libs/quarto-html/popper.min.js"></script>
+<script src="desafio8_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="desafio8_files/libs/quarto-html/anchor.min.js"></script>
+<link href="desafio8_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="desafio8_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="desafio8_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="desafio8_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="desafio8_files/libs/bootstrap/bootstrap-1bc8a17f135ab3d594c857e9f48e611b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Desafio 8</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nicole Teles Loureiro </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="quarto" class="level2">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
+<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
+</section>
+<section id="running-code" class="level2">
+<h2 class="anchored" data-anchor-id="running-code">Running Code</h2>
+<p>When you click the <strong>Render</strong> button a document will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RSQLite)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can add options to executable code like this</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>conn <span class="ot">=</span> <span class="fu">dbConnect</span>(<span class="fu">SQLite</span>(), <span class="st">"dados/database.sqlite3"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>profs <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st"> SELECT DISTINCT instructors.name</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM subjects </span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">  INNER JOIN subject_memberships ON subjects.code = subject_memberships.subject_code</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">  INNER JOIN course_offerings ON subject_memberships.course_offering_uuid = course_offerings.uuid</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">  INNER JOIN sections ON course_offerings.uuid = sections.course_offering_uuid</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">  INNER JOIN teachings ON sections.uuid = teachings.section_uuid</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">  INNER JOIN instructors ON teachings.instructor_id = instructors.id</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">  WHERE subjects.abbreviation = 'STAT'</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>res_profs <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(conn, profs)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res_profs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             name
+1                     MINJING TAO
+2                   DONALD PORTER
+3                      SHENG WANG
+4                   KUNLING HUANG
+5                        DONG XIA
+6                 JENNIFER NGUYEN
+7                     SEULKEE YUN
+8                      DUZHE WANG
+9                     YONGFENG WU
+10                    JARED BROWN
+11                    YUCHEN ZHOU
+12                     VICTOR LUO
+13                 GUN WOONG PARK
+14                    BROOK LUERS
+15                     DUY NGUYEN
+16                   JOHN GILLETT
+17                      QUOC TRAN
+18                      YAOYAO XU
+19                      JIE ZHANG
+20                      LONG PHAN
+21                   WESLEY CHANG
+22                        TONG LI
+23                   SHANE HUBLER
+24                       FAN YANG
+25                     JU HEE CHO
+26                      JEEA CHOI
+27                     SHIXUE LIU
+28                    WEI-YIN LOH
+29                        BIN DAI
+30                     XIPEI YANG
+31               DOUGLAS M. BATES
+32           MICHAEL GEORGE ILTIS
+33                  LIAM JOHNSTON
+34                   CRYSTAL CHEN
+35                      YIFAN MEI
+36                       RUI CHEN
+37                      JILI WANG
+38                    LUWAN ZHANG
+39                 GINA BENNINGER
+40                       JIE SONG
+41                       XIWEN MA
+42                       HAODA FU
+43                   DEYUAN JIANG
+44                 JINGJIANG PENG
+45              ERICA LEE DEADMAN
+46                 AKICHIKA OZEKI
+47                      MENG SONG
+48                       HAO TENG
+49                    DONGGYU KIM
+50                COLIN LONGHURST
+51                FREDERICK BOEHM
+52                     YONGSU LEE
+53               GONZALO CONTADOR
+54                       HAO CHEN
+55                      XIN ZHANG
+56                        BO YANG
+57                    RUNGANG HAN
+58                      SEAN KENT
+59                     DEBRAJ DAS
+60                          YI LI
+61                   CLAIRE BOBST
+62                      CHAN PARK
+63                      SIJING LI
+64                    SHENGJI JIA
+65                     YUCHANG WU
+66                      ZHUANG WU
+67                     XIAOMAO LI
+68                    HYEBIN SONG
+69                      YOURAN QI
+70                 YOUNG MIN PARK
+71                      BIN ZHANG
+72                    QIURONG CUI
+73                      SEHO PARK
+74                    SHENG ZHANG
+75                   HUIKUN ZHANG
+76                 ALYSSA DIGILIO
+77                      YUQING XU
+78                   STEPHEN BERG
+79                    PEIGEN ZHOU
+80                       YAN CHEN
+81                    QIONG ZHANG
+82                YOUNGDEOK HWANG
+83                       HAN CHEN
+84        NICHOLAS STEPHEN KEULER
+85                   ZHENGXIAO WU
+86                    YUJIN CHUNG
+87                   WENWEN ZHANG
+88                    PERLA REYES
+89                        QI TANG
+90                 CHIA-CHIEH LIN
+91                       JIALE XU
+92                      YANG ZHAO
+93                    XINWEI DENG
+94                       MING XIE
+95                    JINGCI MENG
+96                  ISMOR FISCHER
+97                    JIAJIE CHEN
+98                  ZUOFENG SHANG
+99                      HAO ZHENG
+100                         XU XU
+101                       BIN ZHU
+102                    QUEFENG LI
+103                    YU QIU LIU
+104                        JUN LI
+105                       FAN GAO
+106            VICTORIA MANSFIELD
+107                      ANQI SHI
+108                   KYLE HEBERT
+109                      XIUYU MA
+110                  CHENLIANG XU
+111                   CHANHAN HSU
+112                    YUANZHI LI
+113                  KAM-WAH TSUI
+114                    XINYU SONG
+115                 TIMOTHY IDOWU
+116                      XIAO NIE
+117                    CHEN CHENG
+118                 ANDREW LESLIE
+119                    YAOGUO XIE
+120                 KEVIN PACKARD
+121                        YI LIU
+122                    WENZHI CAO
+123                JOSEPH DEUTSCH
+124                       LAN LUO
+125                      RYAN ZEA
+126                ROBERT WARDROP
+127                  SANGBUM CHOI
+128                        XIN LI
+129                 SEUNGBONG HAN
+130                   ZHIGUO XIAO
+131            RICHARD A. JOHNSON
+132                      RUI TANG
+133            IAN BRANSTAD RILEY
+134                      BO HUANG
+135         HEATHER MARIE BRAZEAU
+136                         XU HE
+137         GARY HOWARD SCHROEDER
+138                     JUN ZHANG
+139                     CHENXI LI
+140                SONA Z SWANSON
+141                    YUAN JIANG
+142                    JUNHEE HAN
+143                      LILUN DU
+144                    XIRAN WANG
+145                   ZIFENG ZHAO
+146                     CUIZE HAN
+147                    YING ZHANG
+148                    JOHN DAVIS
+149                     CHEN JING
+150                    JINGLAN LI
+151                       YI CHAI
+152                        THU LE
+153                    ALAN HUANG
+154                   HAOYANG FAN
+155                      BOWEN HU
+156               TZU HSIANG HUNG
+157                    TUN LEE NG
+158               ABIGAIL BENZINE
+159           ALEXANDER COVINGTON
+160                 CHELSEY GREEN
+161               MICHAEL KUTZLER
+162                    LILI ZHENG
+163                  REBECCA POST
+164                       LU YANG
+165                     RUOSI GUO
+166                      XUN ZHAO
+167                       MIN NIU
+168                       JIAN WU
+169                     WEI ZHENG
+170                     XINJIE HE
+171                       JIE WEI
+172           CLAUDIA SOLIS LEMUS
+173                   XUEYAO CHEN
+174            MANJUSHA KANCHARLA
+175              MITCHELL PAUKNER
+176                    XIAOWU DAI
+177               CHENGNING ZHANG
+178                       GINA OH
+179                      LUXI CAO
+180                     SONG WANG
+181                        LAM HO
+182                       TIEN VO
+183                  SHIZHEN WANG
+184                SOHEIL SADEGHI
+185                  BINGYING XIE
+186                       GENG LI
+187             JENNIFER BIRSTLER
+188              MARIA KAMENETSKY
+189                   KYLE HERBET
+190                  JIANCHANG HU
+191                       TRAM TA
+192                     YUAN WANG
+193               KAZUHIKO SHINKI
+194                   SIJIAN WANG
+195                CHIEN-WEI CHEN
+196                BEHZAD AALIPUR
+197                    DEREK BEAN
+198              BEN ADAM HAALAND
+199               ELOISA D CHAVAS
+200                     YALI WANG
+201               VARSHA KULKARNI
+202           SCOTT JOSEPH HETZEL
+203                  MIN JUNG LEE
+204                     FANG FANG
+205                KRISTEN CYFFKA
+206                   TING-LI LIN
+207                   BRET LARGET
+208               KATHERINE GOODE
+209                 ERIK NORDHEIM
+210                      NING FAN
+211                    ANRU ZHANG
+212              GARVESH RASKUTTI
+213  KRISHNAKUMAR BALASUBRAMANIAN
+214                   YAZHEN WANG
+215                   CHAOYANG YU
+216                   YILIN ZHANG
+217                ZHENGJUN ZHANG
+218                  XIUFENG SHAO
+219                       YUAN LI
+220                   BRET HANLON
+221                      LILI LAN
+222                    CECILE ANE
+223                ZHANG CHUNMING
+224                        LEI XU
+225                    MUHONG GAO
+226                 AUGUST JENSEN
+227                      XIAO GUO
+228               THOMAS G. KURTZ
+229            NICHOLAS HENDERSON
+230               CHENSHENG KUANG
+231                     TAERI UHM
+232            NORBERT BINKIEWICZ
+233                     KARL ROHE
+234                   JUNGWON MUN
+235                 JOSEP GINEBRA
+236                        TAO YU
+237                     XINXIN YU
+238                      HAO ZHOU
+239                     LIE XIONG
+240                 QIAN ZHIGUANG
+241                      SHANG WU
+242                       SHAN LU
+243        STEPHEN AARON STANHOPE
+244                LANCINE KONATE
+245 GUILHERME VIEIRA NUNES LUDWIG
+246              PAUL SAVARIAPPAN
+247                     CUICUI QI
+248                  KJELL DOKSUM
+249                  DEREK NORTON
+250              KEEGAN KORTHAUER
+251                   KAILEI CHEN
+252       THEVAASIINEN CHANDERENG
+253                     JOHN KANE
+254                    SOKOL VAKO
+255                       QING LI
+256                     YOUNG LEE
+257                HYUNSEUNG KANG
+258     BEHZAD AALIPUR HAFSHEJANI
+259                   SHULEI WANG
+260                   ZHONGJIE YU
+261                        LIN QI
+262                    JIWEI ZHAO
+263                  SUNDUZ KELES
+264                     SHUYUN YE
+265                      HUI WANG
+266            KEVIN HASEGAWA ENG
+267                   XIAODAN WEI
+268                    MARIA ROJO
+269                    RUIFENG XU
+270                  YONGJOON KIM
+271               NELLIE LAUGHLIN
+272                 MICHAEL HOGAN
+273                   KARL BROMAN
+274                REBECCA KOSCIK
+275                   RONGJUN ZHU
+276                   BI CHENG WU
+277                    YUNONG LIN
+278                  ZHIGENG GENG
+279                 XIAOPING FENG
+280                  SHUANG HUANG
+281                   GUANNAN SUN
+282                  JEE YEON KIM
+283              GREGORY SHINAULT
+284                  TONGHAI YANG
+285              TIMO SEPPALAINEN
+286                 BENEDEK VALKO
+287               DAVID GRIFFEATH
+288                DAVID ANDERSON
+289                   PHILIP WOOD
+290              FLORIAN BERTRAND
+291         JASON RICHARD SWANSON
+292             ALEXANDER KISELEV
+293              SAMUEL STECHMANN
+294                  WAI TONG FAN
+295                       JUN YIN
+296                 STEFFEN LEMPP
+297                  RUIFANG SONG
+298                JAMES D KUELBS
+299                  ANATOLE BECK
+300                  DONGHYUN LEE
+301                 ANDREJ ZLATOS
+302           DANIELE CAPPELLETTI
+303                 MIHAELA IFRIM
+304                SEBASTIEN ROCH
+305                 SCOTT HOTTOVY
+306             JONATHON PETERSON
+307               STEPHEN WAINGER
+308                ALEXANDER FISH
+309        GREGORIO MORENO-FLORES
+310             SUKHENDU MEHROTRA
+311           DIETRICH UHLENBROCK
+312                   LEV BORISOV
+313             RICHARD A BRUALDI
+314                 ARNOLD MILLER
+315               MATTHEW BALLARD
+316                ALBRECHT KLEMM
+317            PAUL M TERWILLIGER
+318                    STEVEN SAM
+319                       KEN ONO
+320                 ROBERT HARRON
+321                    YANNAN QIU
+322         JOHN WILTSHIRE-GORDON
+323                 KYUNGMANN KIM
+324            CHRISTOPHER WAGNER
+325                  PAUL RATHOUZ
+326                STEPHEN WRIGHT
+327                BENJAMIN RECHT
+328                MICHAEL FERRIS
+329           JESSE THOMAS HOLZER
+330                     HUILIN HU
+331               ALBERTO DEL PIA
+332                ROBERT R MEYER
+333                       SHI JIN
+334                MARY LINDSTROM
+335          ADIN-CRISTIAN ANDREI
+336                  MICHAEL LIOU
+337                   CHAOQUN MEI
+338      CHRISTINA M. KENDZIORSKI
+339                RONALD GANGNON
+340            ROBERT WAYNE GREEN
+341                     COLE COOK
+342                MURRAY CLAYTON
+343                      QI JIANG
+344                       JUN ZHU
+345                 ANNE BRUCKNER
+346                       TING YE
+347                      JUN SHAO
+348                  HUAIBAO FENG
+349                     ZIJIAN NI
+350                   THOMAS COOK
+351           RICHARD J. CHAPPELL
+352                   MOO K CHUNG
+353                MICHAEL NEWTON
+354                 BRIAN YANDELL
+355               MICHELLE HARRIS
+356                 NORMAN DRAPER
+357                   YU MENGGANG
+358                     MING YUAN
+359                 FANGFANG WANG
+360                     JUNHO LEE
+361                   GRACE WAHBA
+362                  JASON P FINE
+363          MICHAEL RENE KOSOROK
+364                     YAJUAN SI
+365                        LU MAO
+366                  DAVID DEMETS
+367                JAMES ANDERSON
+368                  EDWARD ERKER
+369                    SHUAI CHEN
+370                    MARI PALTA
+371                  GUANHUA CHEN
+372  SRIKANTHMADHAVAN ARAVAMUTHAN
+373         NATALIA DE LEON GATTI
+374                GUILHERME ROSA
+375                 YANBING ZHENG
+376            CHRISTINE SORKNESS
+377               MARIAN R FISHER</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a> <span class="co">#377 professores que lecionaram disciplinas cujo tópico era estatística</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculo do gpa</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>with_gpa_calc <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">WITH gpa_calc AS (</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">    course_offering_uuid,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">    CAST( (a_count * 4.0 + ab_count * 3.5 + b_count * 3.0 + bc_count * 2.5 + c_count * 2.0 + d_count * 1.0 + f_count * 0.0) AS REAL) /</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">    CAST( (a_count + ab_count + b_count + bc_count + c_count + d_count + f_count) AS REAL) AS avg_gpa</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM grade_distributions</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">  WHERE (a_count + ab_count + b_count + bc_count + c_count + d_count + f_count) &gt; 0</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># professor mais dificil</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>prof_dificil <span class="ot">&lt;-</span> <span class="fu">paste0</span>(with_gpa_calc, <span class="st">"</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st">  T6.name AS professor_name,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">  AVG(gpa.avg_gpa) AS average_professor_gpa</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="st">FROM gpa_calc AS gpa</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN sections AS T4 ON T3.uuid = T4.course_offering_uuid</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN teachings AS T5 ON T4.uuid = T5.section_uuid</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN instructors AS T6 ON T5.instructor_id = T6.id</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subjects AS T1 ON T2.subject_code = T1.code</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE T1.abbreviation = 'STAT'</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY T6.name</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(gpa.avg_gpa) &gt; 1 -- Garante uma média mais robusta</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY average_professor_gpa ASC -- Ordena do menor para o maior</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="st">LIMIT 1 -- Pega apenas o primeiro</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>res_prof_dificil <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(conn, prof_dificil)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res_prof_dificil)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  professor_name average_professor_gpa
+1 JAMES D KUELBS               2.59875</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># professor facil</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>prof_facil <span class="ot">&lt;-</span> <span class="fu">paste0</span>(with_gpa_calc, <span class="st">"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">  T6.name AS professor_name,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">  AVG(gpa.avg_gpa) AS average_professor_gpa</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">FROM gpa_calc AS gpa</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN sections AS T4 ON T3.uuid = T4.course_offering_uuid</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN teachings AS T5 ON T4.uuid = T5.section_uuid</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN instructors AS T6 ON T5.instructor_id = T6.id</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subjects AS T1 ON T2.subject_code = T1.code</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE T1.abbreviation = 'STAT'</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY T6.name</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(gpa.avg_gpa) &gt; 1</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY average_professor_gpa DESC -- Ordena do maior para o menor</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="st">LIMIT 1</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>res_prof_facil <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(conn, prof_facil)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res_prof_facil)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  professor_name average_professor_gpa
+1      YAJUAN SI                     4</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># disciplina mais dificil</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>disciplina_dificil <span class="ot">&lt;-</span> <span class="fu">paste0</span>(with_gpa_calc, <span class="st">"</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">  T_course.number,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">  T_course.name AS course_name,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">  AVG(gpa.avg_gpa) AS average_course_gpa</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="st">FROM gpa_calc AS gpa</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN courses AS T_course ON T3.course_uuid = T_course.uuid</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subjects AS T1 ON T2.subject_code = T1.code</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE T1.abbreviation = 'STAT'</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY T_course.name, T_course.number</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(gpa.avg_gpa) &gt; 1</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY average_course_gpa ASC -- Ordena do menor para o maior</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="st">LIMIT 1</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>res_disciplina_dificil <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(conn, disciplina_dificil)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res_disciplina_dificil)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  number                               course_name average_course_gpa
+1    431 Introduction to the Theory of Probability           2.891568</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># disciplina mais facil</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>disciplina_facil <span class="ot">&lt;-</span> <span class="fu">paste0</span>(with_gpa_calc, <span class="st">"</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">  T_course.number,</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">  T_course.name AS course_name,</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">  AVG(gpa.avg_gpa) AS average_course_gpa</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">FROM gpa_calc AS gpa</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN courses AS T_course ON T3.course_uuid = T_course.uuid</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">INNER JOIN subjects AS T1 ON T2.subject_code = T1.code</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE T1.abbreviation = 'STAT'</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY T_course.name, T_course.number</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(gpa.avg_gpa) &gt; 1</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY average_course_gpa DESC -- Ordena do maior para o menor</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">LIMIT 1</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>res_disciplina_facil <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(conn, disciplina_facil)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res_disciplina_facil)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  number                     course_name average_course_gpa
+1    811 Sample Survey Theory and Method                  4</code></pre>
+</div>
+</div>
+<p>The <code>echo: false</code> option disables the printing of code (only output is displayed).</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

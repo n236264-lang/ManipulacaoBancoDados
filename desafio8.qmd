@@ -1,0 +1,157 @@
+---
+title: "Desafio 8"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(RSQLite)
+```
+
+You can add options to executable code like this
+
+```{r}
+conn = dbConnect(SQLite(), "dados/database.sqlite3")
+```
+
+```{r}
+profs <- "
+ SELECT DISTINCT instructors.name
+  FROM subjects 
+  INNER JOIN subject_memberships ON subjects.code = subject_memberships.subject_code
+  INNER JOIN course_offerings ON subject_memberships.course_offering_uuid = course_offerings.uuid
+  INNER JOIN sections ON course_offerings.uuid = sections.course_offering_uuid
+  INNER JOIN teachings ON sections.uuid = teachings.section_uuid
+  INNER JOIN instructors ON teachings.instructor_id = instructors.id
+  WHERE subjects.abbreviation = 'STAT'
+"
+
+res_profs <- dbGetQuery(conn, profs)
+print(res_profs)
+
+ #377 professores que lecionaram disciplinas cujo tópico era estatística
+```
+
+```{r}
+# calculo do gpa
+
+with_gpa_calc <- "
+WITH gpa_calc AS (
+  SELECT
+    course_offering_uuid,
+    CAST( (a_count * 4.0 + ab_count * 3.5 + b_count * 3.0 + bc_count * 2.5 + c_count * 2.0 + d_count * 1.0 + f_count * 0.0) AS REAL) /
+    CAST( (a_count + ab_count + b_count + bc_count + c_count + d_count + f_count) AS REAL) AS avg_gpa
+  FROM grade_distributions
+  WHERE (a_count + ab_count + b_count + bc_count + c_count + d_count + f_count) > 0
+)
+"
+```
+
+```{r}
+# professor mais dificil
+
+prof_dificil <- paste0(with_gpa_calc, "
+SELECT
+  T6.name AS professor_name,
+  AVG(gpa.avg_gpa) AS average_professor_gpa
+FROM gpa_calc AS gpa
+INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid
+INNER JOIN sections AS T4 ON T3.uuid = T4.course_offering_uuid
+INNER JOIN teachings AS T5 ON T4.uuid = T5.section_uuid
+INNER JOIN instructors AS T6 ON T5.instructor_id = T6.id
+INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid
+INNER JOIN subjects AS T1 ON T2.subject_code = T1.code
+WHERE T1.abbreviation = 'STAT'
+GROUP BY T6.name
+HAVING COUNT(gpa.avg_gpa) > 1 -- Garante uma média mais robusta
+ORDER BY average_professor_gpa ASC -- Ordena do menor para o maior
+LIMIT 1 -- Pega apenas o primeiro
+")
+
+res_prof_dificil <- dbGetQuery(conn, prof_dificil)
+print(res_prof_dificil)
+```
+
+```{r}
+# professor facil
+
+prof_facil <- paste0(with_gpa_calc, "
+SELECT
+  T6.name AS professor_name,
+  AVG(gpa.avg_gpa) AS average_professor_gpa
+FROM gpa_calc AS gpa
+INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid
+INNER JOIN sections AS T4 ON T3.uuid = T4.course_offering_uuid
+INNER JOIN teachings AS T5 ON T4.uuid = T5.section_uuid
+INNER JOIN instructors AS T6 ON T5.instructor_id = T6.id
+INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid
+INNER JOIN subjects AS T1 ON T2.subject_code = T1.code
+WHERE T1.abbreviation = 'STAT'
+GROUP BY T6.name
+HAVING COUNT(gpa.avg_gpa) > 1
+ORDER BY average_professor_gpa DESC -- Ordena do maior para o menor
+LIMIT 1
+")
+
+res_prof_facil <- dbGetQuery(conn, prof_facil)
+print(res_prof_facil)
+```
+
+```{r}
+# disciplina mais dificil
+
+disciplina_dificil <- paste0(with_gpa_calc, "
+SELECT
+  T_course.number,
+  T_course.name AS course_name,
+  AVG(gpa.avg_gpa) AS average_course_gpa
+FROM gpa_calc AS gpa
+INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid
+INNER JOIN courses AS T_course ON T3.course_uuid = T_course.uuid
+INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid
+INNER JOIN subjects AS T1 ON T2.subject_code = T1.code
+WHERE T1.abbreviation = 'STAT'
+GROUP BY T_course.name, T_course.number
+HAVING COUNT(gpa.avg_gpa) > 1
+ORDER BY average_course_gpa ASC -- Ordena do menor para o maior
+LIMIT 1
+")
+
+res_disciplina_dificil <- dbGetQuery(conn, disciplina_dificil)
+print(res_disciplina_dificil)
+```
+
+```{r}
+# disciplina mais facil
+
+disciplina_facil <- paste0(with_gpa_calc, "
+SELECT
+  T_course.number,
+  T_course.name AS course_name,
+  AVG(gpa.avg_gpa) AS average_course_gpa
+FROM gpa_calc AS gpa
+INNER JOIN course_offerings AS T3 ON gpa.course_offering_uuid = T3.uuid
+INNER JOIN courses AS T_course ON T3.course_uuid = T_course.uuid
+INNER JOIN subject_memberships AS T2 ON T3.uuid = T2.course_offering_uuid
+INNER JOIN subjects AS T1 ON T2.subject_code = T1.code
+WHERE T1.abbreviation = 'STAT'
+GROUP BY T_course.name, T_course.number
+HAVING COUNT(gpa.avg_gpa) > 1
+ORDER BY average_course_gpa DESC -- Ordena do maior para o menor
+LIMIT 1
+")
+
+res_disciplina_facil <- dbGetQuery(conn, disciplina_facil)
+print(res_disciplina_facil)
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
