@@ -1,0 +1,124 @@
+---
+title: "desafio 11"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+# hora do relatorio no final
+```{python}
+import polars as pl
+```
+
+```{python}
+#Definir os nomes das colunas
+columns = [
+    'age', 'workclass', 'fnlwgt', 'education', 'education-num', 
+    'marital-status', 'occupation', 'relationship', 'race', 'sex', 
+    'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income'
+]
+#Definir os tipos de dados
+dtypes = {
+    'age': pl.Int64,
+    'workclass': pl.Utf8,
+    'fnlwgt': pl.Int64,
+    'education': pl.Utf8,
+    'education-num': pl.Int64,
+    'marital-status': pl.Utf8,
+    'occupation': pl.Utf8,
+    'relationship': pl.Utf8,
+    'race': pl.Utf8,
+    'sex': pl.Utf8,
+    'capital-gain': pl.Int64,
+    'capital-loss': pl.Int64,
+    'hours-per-week': pl.Int64,
+    'native-country': pl.Utf8,
+    'income': pl.Utf8
+}
+
+#Importar o arquivo
+df_renda = pl.read_csv(
+    'dados/renda_adulta.csv.gz',
+    has_header=False,
+    new_columns=columns,
+    dtypes=dtypes,
+    null_values='?'
+)
+print(df_renda)
+```
+
+```{python}
+#tipo de cada coluna
+print(df_renda.schema)
+```
+```{python}
+#dimensao da tabela
+print(df_renda.shape)
+```
+
+
+
+```{python}
+#salario
+contagem_renda = df_renda["income"].value_counts()
+print(contagem_renda)
+```
+```{python}
+renda_longo = df_renda.melt(
+    id_vars=[col for col in df_renda.columns if col not in ["capital-gain", "capital-loss"]],
+    value_vars=["capital-gain", "capital-loss"],
+    variable_name="tipo",
+    value_name="Valor"
+)
+
+renda_longo = renda_longo.with_columns(
+    pl.col("tipo").str.replace("capital-", "")
+)
+
+print(renda_longo.head())
+```
+```{python}
+media_horas = (
+    df_renda.group_by("income")
+      .agg(pl.col("hours-per-week").mean().alias("media_horas"))
+)
+print(media_horas)
+```
+```{python}
+pessoas_por_profissao = (
+    df_renda.group_by("occupation")
+      .agg(pl.count().alias("quantidade_pessoas"))
+      .sort("quantidade_pessoas", descending=True)
+)
+
+print(pessoas_por_profissao)
+```
+
+```{r}
+reticulate::py_install(c("jupyter", "PyYAML"))
+```
+
+```{python}
+import datetime
+agora = datetime.datetime.now()
+data_hora_formatada = agora.strftime("%d/%m/%Y %H:%M:%S")
+print(f"Relatório gerado em: {data_hora_formatada}")
+```
+
+
+
+
+
+You can add options to executable code like this
+
+
+
+The `echo: false` option disables the printing of code (only output is displayed).
