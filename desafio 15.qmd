@@ -1,0 +1,44 @@
+---
+title: "desafio 15"
+author: "Nicole Teles Loureiro"
+format: html
+editor: visual
+---
+
+
+```{julia}
+function serie(n)
+    s = 0.0
+    for i in 1:n
+        s += sqrt(i)
+    end
+    return s
+end
+
+println("Série:")
+@time serie(200_000_000)
+```
+
+
+```{julia}
+using Base.Threads
+
+function paralelo(n)
+    local_sums = Vector{Float64}(undef, nthreads())
+
+    # inicializar cada posição
+    for i in 1:nthreads()
+        local_sums[i] = 0.0
+    end
+
+    @threads for i in 1:n
+        local_sums[threadid()] += sqrt(i)
+    end
+
+    return sum(local_sums)
+end
+
+@time paralelo(200_000_000)
+```
+
+
