@@ -1,0 +1,809 @@
+---
+title: "Manipulação de Dados: Julia vs R vs Python"
+subtitle: "Uma Comparação de Sintaxe e Performance"
+author: "Marilaine Rodrigues e Nicole Teles"
+format:
+  revealjs:
+    scrollable: true  # <--- Habilita rolagem em todos os slides automaticamente
+    smaller: true     # <--- Diminui um pouco a fonte para caber mais coisa
+editor: visual
+execute:
+  echo: true
+  warning: false      # <--- Remove os avisos (warnings)
+  message: false
+---
+
+## 1. Introdução e Ferramentas
+
+Nosso objetivo é comparar a **facilidade de uso** (sintaxe) e o **tempo de execução** (performance) para tarefas de manipulação de dados.
+
+As ferramentas que vamos comparar são:
+
+-   **Julia:** `DataFrames.jl`
+-   **R:** `dplyr`
+-   **Python:** `pandas`
+
+## 2. O que é manipulação de dados?
+
+-   É o processo de organizar, transformar e trabalhar com dados para torná-los mais úteis, compreensíveis ou prontos para análise. Temos a transformação de colunas, filtragem dos dados, agrupamento, junção de tabelas entre outras funções.
+
+## 3. Pacotes Necessários
+
+-   Para rodar este slide, você precisa ter instalado:
+
+### 3.1 R
+
+```{r}
+#| results: hide
+#| warning: false
+#| message: false
+#| eval: false
+
+# Configurar repositório CRAN
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+# Instalar pacotes R se não existirem
+pacotes_r <- c("JuliaCall", "dplyr", "readr", "bench", "reticulate")
+for (pkg in pacotes_r) {
+  if (!require(pkg, character.only = TRUE)) install.packages(pkg)
+}
+```
+
+## 3.2 Julia
+
+```{julia}
+#| results: hide
+#| warning: false
+#| message: false
+#| eval: false
+Pkg.add("DataFrames")
+Pkg.add("CSV")
+Pkg.add("BenchmarkTools")
+Pkg.add("CategoricalArrays")
+Pkg.add("StatsBase")
+Pkg.add("Plots")
+Pkg.add("Statistics")
+```
+
+## 3.3 Python
+
+```{python}
+#| results: hide
+#| warning: false
+#| message: false
+#| eval: false
+#pip install pandas
+#pip install numpy
+#pip install matplotlib seaborn
+```
+
+## 4. Nosso banco de dados
+
+-   Total de registros: 5000
+-   Total de variáveis: 25
+
+###### Contém informações sobre:
+
+-   uso de tecnologia (horas de tela em diferentes dispositivos)
+-   uso por finalidade (trabalho, social, entretenimento)
+-   indicadores de saúde mental (ansiedade, estresse, depressão)
+-   sono, humor, produtividade
+-   disponivel em: https://www.kaggle.com/datasets/nagpalprabhavalkar/tech-use-and-stress-wellness
+
+## 5. Carregando os Dados
+
+### 5.1 R
+
+```{r}
+library(readr)
+library(dplyr)
+
+# Carregar dados e visualização do tempo em R
+inicio <- Sys.time()
+df_r <- read_csv("Tech_Use_Stress_Wellness.csv")
+tempo_ler_r <- Sys.time() - inicio
+tempo_ler_r <- round(as.numeric(tempo_ler_r), 3)
+print(paste("Tempo de leitura (segundos):", tempo_ler_r))
+head(df_r, 6)
+```
+
+## 5.2 Julia
+
+```{julia}
+using CSV, DataFrames, BenchmarkTools
+
+df_julia = DataFrame(CSV.File("Tech_Use_Stress_Wellness.csv"));
+tempo_ler_julia = @belapsed DataFrame(CSV.File("Tech_Use_Stress_Wellness.csv"));
+println("Tempo de execução: $tempo_ler_julia segundos")
+```
+
+## 5.3 Python
+
+```{python}
+# Carregar bibliotecas
+import pandas as pd
+import time
+# Medir tempo de leitura do CSV
+inicio = time.time()
+df_py = pd.read_csv("Tech_Use_Stress_Wellness.csv")
+fim = time.time()
+
+t_ler_py = fim - inicio
+print(f"Tempo de execução: {t_ler_py:.5f} segundos")
+df_py.head(6)
+```
+
+## 6. Análise das faixas de risco
+
+#### 6.1 Julia
+
+```{julia}
+using DataFrames, CategoricalArrays, Statistics
+t_risco_julia = @elapsed begin
+# Criar cópia do dataframe original
+df_risco = copy(df_julia);
+
+# Criar faixas etárias
+df_risco.faixa_etaria = cut(
+    df_risco.age,
+    [0, 29, 39, 49, 59, 120];
+    labels = ["Até 29", "30-39", "40-49", "50-59", "60+"],
+    extend = true
+);
+# Ordenar categoria explicitamente
+df_risco.faixa_etaria = CategoricalArray(
+    df_risco.faixa_etaria,
+    ordered = true,
+    levels = ["Até 29","30-39","40-49","50-59","60+"]
+);
+# Calcular média de estresse por faixa etária
+media_estresse = combine(
+    groupby(df_risco, :faixa_etaria),
+    :stress_level => mean => :media_estresse
+);
+# Juntar média ao dataframe
+df_risco = leftjoin(df_risco, media_estresse, on = :faixa_etaria);
+# Diferença individual de estresse
+df_risco.dif_estresse = df_risco.stress_level .- df_risco.media_estresse;
+# Criar tabela para plot
+resumo_plot = combine(groupby(df_risco, [:faixa_etaria, :gender]),
+    :stress_level => mean => :media_estresse
+);
+end;
+
+println("Tempo de manipulação (Julia): $t_risco_julia segundos")
+```
+
+## 6.1 Julia
+
+```{julia}
+first(resumo_plot, 5)
+```
+
+## 6.1 Julia
+
+```{julia}
+using StatsPlots, CategoricalArrays
+cores = Dict(
+    "Female" => :lightcoral,
+    "Male"   => :lightblue,
+    "Other"  => :lightyellow);
+grupos = sort(unique(resumo_plot.gender));
+cores_lista = [cores[g] for g in grupos];
+cores_matrix = reshape(cores_lista, 1, :); 
+@df resumo_plot groupedbar(
+    :faixa_etaria,
+    :media_estresse,
+    group = :gender,
+    color = cores_matrix,    # <--- Agora entra como matriz
+    bar_position = :dodge,
+    xlabel = "Faixa Etária",
+    ylabel = "Nível Médio de Estresse",
+    title = "Média de Estresse por Faixa Etária e Gênero",
+    legendtitle = "Gênero");
+```
+
+## 6.2 R
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Medir tempo total do processamento
+tempo_total <- system.time({
+  # Criar faixas de risco e calcular diferenças
+  risco_r <- df_r %>%
+    mutate(
+      faixa_etaria = cut(age, breaks = c(0,29,39,49,59,120),
+                         labels = c("Até 29","30-39","40-49","50-59","60+")),
+      media_estresse = ave(stress_level, faixa_etaria, FUN = mean),
+      dif_estresse = stress_level - media_estresse)
+  # Preparar gráfico
+  grafico_r <- risco_r %>%
+    group_by(faixa_etaria, gender) %>%
+    summarise(media_estresse = mean(stress_level, na.rm = TRUE), .groups = "drop") %>%
+    ggplot(aes(x = faixa_etaria, y = media_estresse, fill = gender)) +
+    geom_col(position = "dodge") +
+    scale_fill_manual(values = c("Female" = "lightcoral", "Male" = "lightblue", "Other" = "lightyellow")) +
+    labs(title = "Média de Estresse por Faixa Etária e Gênero",
+         x = "Faixa Etária", y = "Nível Médio de Estresse", fill = "Gênero") +
+    theme_classic()})
+paste("Tempo total processamento (s):", round(tempo_total["elapsed"],3))
+```
+
+## 6.2 Plot R
+
+```{r}
+grafico_r
+```
+
+## 6.3 Python
+
+```{python}
+import pandas as pd
+import time
+
+inicio = time.time()
+# Criar uma cópia do dataframe original
+df_py_faixa = df_py.copy()
+# Criar faixas etárias
+df_py_faixa['faixa_etaria'] = pd.cut(
+    df_py_faixa['age'],
+    bins=[0, 29, 39, 49, 59, 120],
+    labels=["Até 29", "30-39", "40-49", "50-59", "60+"]
+)
+# Média de estresse por faixa
+df_py_faixa['media_estresse'] = (
+    df_py_faixa.groupby('faixa_etaria')['stress_level']
+    .transform('mean'))
+# Diferença do estresse individual para a média
+df_py_faixa['dif_estresse'] = (
+    df_py_faixa['stress_level'] - df_py_faixa['media_estresse'])
+t_faixa1_py = time.time() - inicio
+print(f"Tempo Python: {t_faixa1_py:.5f} segundos")
+```
+
+## 6.3 Plot Python
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib
+import time
+
+matplotlib.use("Agg")
+
+inicio = time.time()
+# Criar figura isolada para evitar mistura com outros gráficos
+plt.figure(figsize=(9,5))
+# Preparar dados para o plot
+df_plot = (
+    df_py_faixa
+    .groupby(['faixa_etaria', 'gender'], observed=True)['stress_level']
+    .mean()
+    .reset_index()
+)
+# Criar o gráfico
+sns.barplot(
+    data=df_plot,
+    x='faixa_etaria',
+    y='stress_level',
+    hue='gender',
+    palette={"Female": "lightcoral", "Male": "lightblue", "Other": "lightyellow"}
+)
+plt.title("Média de Estresse por Faixa Etária e Gênero")
+plt.xlabel("Faixa Etária")
+plt.ylabel("Nível Médio de Estresse")
+plt.tight_layout()
+plt.show()
+t_faixa2_py = time.time() - inicio
+print(f"Tempo plot Python: {t_faixa2_py:.5f} segundos")
+```
+
+## 6.3 Plot Python
+
+```{python}
+#| echo: FALSE
+plt.figure(figsize=(9,5))
+# Preparar dados para o plot
+df_plot = (
+    df_py_faixa
+    .groupby(['faixa_etaria', 'gender'], observed=True)['stress_level']
+    .mean()
+    .reset_index()
+)
+# Criar o gráfico
+sns.barplot(
+    data=df_plot,
+    x='faixa_etaria',
+    y='stress_level',
+    hue='gender',
+    palette={"Female": "lightcoral", "Male": "lightblue", "Other": "lightyellow"}
+)
+plt.title("Média de Estresse por Faixa Etária e Gênero")
+plt.xlabel("Faixa Etária")
+plt.ylabel("Nível Médio de Estresse")
+plt.tight_layout()
+plt.show()
+```
+
+## 7. Relação sono x redes x ansiedade
+
+### 7.1 1º Plot Julia
+
+```{julia}
+using StatsPlots
+# medir somente o tempo da preparação e criação do objeto
+t_plot1_jl = @elapsed begin
+    sleep = df_julia.sleep_quality
+    anxiety = df_julia.weekly_anxiety_score
+    plt1 = boxplot(
+        sleep, anxiety,
+        xlabel = "Sleep Quality",
+        ylabel = "Anxiety",
+        title = "Distribuição da Ansiedade por Qualidade do Sono"
+    )
+end
+```
+
+## 7.1 1º Plot Julia
+
+```{julia}
+display(plt1)
+println("Tempo: $(t_plot1_jl) segundos")
+```
+
+## 7.1 2º Plot Julia
+
+```{julia}
+using Plots
+sleep = df_julia.sleep_quality;
+anxiety = df_julia.weekly_anxiety_score;
+social = df_julia.social_media_hours;
+# medir apenas o tempo de criação do gráfico
+t_plot2_jl = @elapsed begin
+    plt2 = scatter(
+        social,
+        anxiety,
+        xlabel = "Social Media Hours",
+        ylabel = "Anxiety Score",
+        title = "Scatterplot: Uso de rede social vs ansiedade",
+        markersize = 5,
+        alpha = 0.6,
+        legend = false
+    )
+end;
+```
+
+## 7.1 2º Plot Julia
+
+```{julia}
+display(plt2)
+println("Tempo: $(t_plot2_jl) segundos")
+```
+
+## 7.1 3º Plot Julia
+
+```{julia}
+sleep = df_julia.sleep_quality;
+anxiety = df_julia.weekly_anxiety_score;
+social = df_julia.social_media_hours;
+t_plot3_jl = @elapsed begin;
+    plt3 = violin(
+        sleep,
+        social,
+        xlabel = "Sleep Quality",
+        ylabel = "Social Media Hours",
+        title = "Violin Plot: Qualidade do sono vs uso de rede social"
+    )
+end;
+```
+
+## 7.1 3º Plot Julia
+
+```{julia}
+display(plt3)
+println("Tempo: $(t_plot3_jl) segundos")
+```
+
+## 7.2 1º Plot R
+
+```{r}
+library(ggplot2)
+library(readr)
+
+# Transformar variável categórica
+df_r$sleep_quality <- as.factor(df_r$sleep_quality)
+# Medir tempo de criação do gráfico
+t_plot1_r <- system.time({
+  grafico_sono_ansiedade <- ggplot(df_r, aes(x = sleep_quality, y = weekly_anxiety_score)) +
+    geom_boxplot(fill = "lightblue", color = "darkblue", alpha = 0.7) +
+    labs(
+      title = "Distribuição da Ansiedade por Qualidade do Sono",
+      x = "Qualidade do Sono (Rating)",
+      y = "Pontuação Semanal de Ansiedade"
+    ) +
+    theme_minimal()
+})
+```
+
+## 7.2 1º Plot R
+
+```{r}
+grafico_sono_ansiedade
+print(paste("Tempo de criação do gráfico (s):", round(t_plot1_r["elapsed"], 3)))
+```
+
+## 7.2 2º Plot R
+
+```{r}
+# Medir tempo de criação do gráfico
+t_plot2_r <- system.time({
+  grafico_social_ansiedade <- ggplot(df_r, aes(x = social_media_hours, y = weekly_anxiety_score)) +
+    geom_point(color = "blue", alpha = 0.6) +
+    labs(
+      title = "Uso de Mídia Social vs. Pontuação de Ansiedade (Scatter Plot)",
+      x = "Horas de Uso de Mídia Social",
+      y = "Pontuação Semanal de Ansiedade"
+    ) +
+    theme_classic()
+})
+print(paste("Tempo de criação do gráfico (s):", round(t_plot2_r["elapsed"], 3)))
+```
+
+## 7.2 2º Plot R
+
+```{r}
+grafico_social_ansiedade
+print(paste("Tempo de criação do gráfico (s):", round(t_plot2_r["elapsed"], 3)))
+```
+
+## 7.2 3º Plot R
+
+```{r}
+# Medir tempo de criação do gráfico
+t_plot3_r <- system.time({
+  grafico_violin <- ggplot(df_r, aes(x = sleep_quality, y = social_media_hours)) +
+    geom_violin(trim = FALSE, fill = "lightblue") +
+    labs(
+      title = "Densidade de Uso de Mídia Social por Qualidade do Sono",
+      x = "Qualidade do Sono (Rating)",
+      y = "Horas de Uso de Mídia Social"
+    ) +
+    theme_bw()
+})
+```
+
+## 7.2 3º Plot R
+
+```{r}
+grafico_violin
+print(paste("Tempo de criação do gráfico (s):", round(t_plot3_r["elapsed"], 3)))
+```
+
+## 7.3 1º Plot Python
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
+
+inicio = time.time()
+# Copiar DataFrame
+df_py_plot1 = df_py.copy()
+df_py_plot1['sleep_quality'] = df_py_plot1['sleep_quality'].astype('category')
+# Criar figura separada (evita misturar gráficos!)
+plt.figure(figsize=(8,5))
+# Boxplot
+plot1_py = sns.boxplot(
+    x='sleep_quality', 
+    y='weekly_anxiety_score', 
+    data=df_py_plot1,
+    color='lightblue'
+)
+plt.title("Distribuição da Ansiedade por Qualidade do Sono", fontsize=16)
+plt.xlabel("Qualidade do Sono (Rating)", fontsize=12)
+plt.ylabel("Pontuação Semanal de Ansiedade", fontsize=12)
+plt.tight_layout()
+plt.show()
+end = time.time()
+t_plot1_py = end - inicio
+print(f"Tempo de execução: {t_plot1_py:.5f} segundos")
+```
+
+## 7.3 1º Plot Python
+
+```{python}
+#| echo: FALSE
+df_py_plot1 = df_py.copy()
+df_py_plot1['sleep_quality'] = df_py_plot1['sleep_quality'].astype('category')
+# Criar figura separada (evita misturar gráficos!)
+plt.figure(figsize=(8,5))
+# Boxplot
+plot1_py = sns.boxplot(
+    x='sleep_quality', 
+    y='weekly_anxiety_score', 
+    data=df_py_plot1,
+    color='lightblue'
+)
+plt.title("Distribuição da Ansiedade por Qualidade do Sono", fontsize=16)
+plt.xlabel("Qualidade do Sono (Rating)", fontsize=12)
+plt.ylabel("Pontuação Semanal de Ansiedade", fontsize=12)
+plt.tight_layout()
+plt.show()
+```
+
+## 7.3 2º Plot Python
+
+```{python}
+# Plot 2
+import seaborn as sns
+import matplotlib.pyplot as plt
+import time
+
+inicio = time.time()
+df_py_plot2 = df_py.copy()
+# Criar figura separada (impede mistura com outros gráficos)
+plt.figure(figsize=(8,5))
+# Scatterplot
+plot2_py = sns.scatterplot(
+    x='social_media_hours', 
+    y='weekly_anxiety_score', 
+    data=df_py_plot2,
+    color='blue',
+    alpha=0.6  # ponto semi-transparente para datasets grandes
+)
+plt.title("Uso de Mídia Social vs. Pontuação de Ansiedade (Scatter Plot)", fontsize=16)
+plt.xlabel("Horas de Uso de Mídia Social", fontsize=12)
+plt.ylabel("Pontuação Semanal de Ansiedade", fontsize=12)
+plt.tight_layout()
+plt.show()
+end = time.time()
+t_plot2_py = end - inicio
+print(f"Tempo de execução: {t_plot2_py:.5f} segundos")
+```
+
+## 7.3 2º Plot Python
+
+```{python}
+#| echo: FALSE
+df_py_plot2 = df_py.copy()
+# Criar figura separada (impede mistura com outros gráficos)
+plt.figure(figsize=(8,5))
+# Scatterplot
+plot2_py = sns.scatterplot(
+    x='social_media_hours', 
+    y='weekly_anxiety_score', 
+    data=df_py_plot2,
+    color='blue',
+    alpha=0.6  # ponto semi-transparente para datasets grandes
+)
+plt.title("Uso de Mídia Social vs. Pontuação de Ansiedade (Scatter Plot)", fontsize=16)
+plt.xlabel("Horas de Uso de Mídia Social", fontsize=12)
+plt.ylabel("Pontuação Semanal de Ansiedade", fontsize=12)
+plt.show()
+```
+
+## 7.3 3º Plot Python
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+import time
+
+inicio = time.time()
+df_py_plot3 = df_py.copy()
+# Criar figura separada para não misturar com outros plots
+plt.figure(figsize=(8,5))
+# Violin plot
+plot3_py = sns.violinplot(
+    x='sleep_quality', 
+    y='social_media_hours', 
+    data=df_py_plot3,
+    color="lightblue",  # Preenchimento
+    inner=None,         # Remove estatísticas internas
+    cut=0               # Sem extrapolação
+)
+plt.title("Densidade de Uso de Mídia Social por Qualidade do Sono", fontsize=16)
+plt.xlabel("Qualidade do Sono (Rating)", fontsize=12)
+plt.ylabel("Horas de Uso de Mídia Social", fontsize=12)
+plt.tight_layout()
+plt.show()
+end = time.time()
+t_plot3_py = end - inicio
+print(f"Tempo de execução: {t_plot3_py:.5f} segundos")
+```
+
+## 7.3 3º Plot Python
+
+```{python}
+#| echo: FALSE
+df_py_plot3 = df_py.copy()
+# Criar figura separada para não misturar com outros plots
+plt.figure(figsize=(8,5))
+# Violin plot
+plot3_py = sns.violinplot(
+    x='sleep_quality', 
+    y='social_media_hours', 
+    data=df_py_plot3,
+    color="lightblue",  # Preenchimento
+    inner=None,         # Remove estatísticas internas
+    cut=0               # Sem extrapolação
+)
+plt.title("Densidade de Uso de Mídia Social por Qualidade do Sono", fontsize=16)
+plt.xlabel("Qualidade do Sono (Rating)", fontsize=12)
+plt.ylabel("Horas de Uso de Mídia Social", fontsize=12)
+plt.show()
+```
+
+## 8. Comparação de tempo
+
+```{julia}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+#| results: hide
+
+using CSV, DataFrames
+
+tempos_julia = DataFrame(
+Tarefa = [
+"1. Leitura CSV",
+"2. Manipulação Dados",
+"3. Plot 1 (Boxplot)",
+"4. Plot 2 (Scatter)",
+"5. Plot 3 (Violin)"
+],
+Julia = [
+tempo_ler_julia,
+t_risco_julia,
+t_plot1_jl,
+t_plot2_jl,
+t_plot3_jl
+]
+)
+
+CSV.write("tempos_julia.csv", tempos_julia)
+println("Arquivo tempos_julia.csv salvo com sucesso!")
+```
+
+```{python}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+#| results: hide
+import pandas as pd
+
+tempos_python = pd.DataFrame({
+"Tarefa": [
+"1. Leitura CSV",
+"2. Manipulação Dados",
+"3. Plot 1 (Boxplot)",
+"4. Plot 2 (Scatter)",
+"5. Plot 3 (Violin)"
+],
+"Python": [
+t_ler_py,
+t_faixa1_py,
+t_plot1_py,
+t_plot2_py,
+t_plot3_py
+]
+})
+
+tempos_python.to_csv("tempos_python.csv", index=False)
+print("Arquivo tempos_python.csv salvo com sucesso!")
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+#| results: hide
+library(readr)
+library(dplyr)
+
+tempos_r <- data.frame(
+Tarefa = c(
+"1. Leitura CSV",
+"2. Manipulação Dados",
+"3. Plot 1 (Boxplot)",
+"4. Plot 2 (Scatter)",
+"5. Plot 3 (Violin)"
+),
+R = c(
+tempo_ler_r,
+round(tempo_total["elapsed"], 3),
+round(t_plot1_r["elapsed"], 3),
+round(t_plot2_r["elapsed"], 3),
+round(t_plot3_r["elapsed"], 3)
+)
+)
+
+write_csv(tempos_r, "tempos_r.csv")
+print("Arquivo tempos_r.csv salvo com sucesso!")
+```
+- Para a criação da tabela, nós salvamos previamente os dados em csv's
+
+```{r}
+library(readr)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+# 1. Ler os três CSVs --------------------------
+
+tempos_julia <- read_csv("tempos_julia.csv")
+tempos_r     <- read_csv("tempos_r.csv")
+tempos_python <- read_csv("tempos_python.csv")
+
+# 2. Juntar tudo pela coluna 'Tarefa' ----------
+
+tabela_final <- tempos_julia %>%
+left_join(tempos_r, by = "Tarefa") %>%
+left_join(tempos_python, by = "Tarefa")
+```
+
+
+## 8.1 Tabela de Comparação
+
+```{r}
+#| echo: FALSE
+# 3. Tabela estilizada -------------------------
+
+tabela_final %>%
+kbl(caption = "⏱️ Tempo de Execução (em segundos)", align = "c") %>%
+kable_styling(
+bootstrap_options = c("striped", "hover", "condensed"),
+full_width = FALSE,
+font_size = 24
+) %>%
+row_spec(0, bold = TRUE, color = "white", background = "#2C3E50") %>%
+column_spec(1, bold = TRUE, border_right = TRUE)
+```
+
+
+## 9. Conclusão
+
+A análise de desempenho entre *Julia*, *R* e *Python* mostrou que nenhuma linguagem é universalmente superior; cada uma oferece benefícios de acordo com o tipo de atividade executada.
+
+- Na leitura do CSV, Julia demonstrou um melhor desempenho; 
+- Na manipulação dos dados, Python apresentou o melhor tempo;
+- Na plotagem dos gráficos, R teve o melhor desempenho.
+
+Portanto, a seleção da linguagem mais adequada depende tanto da necessidade da análise quanto do equilíbrio entre o desempenho e o conhecimento do usuário sobre o ecossistema de cada idioma.
+
+
+## 10. Exercício - Manipulação de Dados 
+Para consolidar os conceitos apresentados nesta aula, crie um pequeno conjunto de dados fictício contendo aproximadamente 15 observações com as seguintes variáveis:
+
+Nome (ou um identificador numérico)
+
+Idade
+
+Peso (em kg)
+
+Altura (em metros)
+
+Gênero
+
+1. Calcule o IMC de cada indivíduo pela fórmula:
+IMC = peso / altura ²
+
+
+2. Crie uma nova variável de faixa etária, usando a seguinte classificação:
+- jovem: idade < 25
+- adulto: 25 ≤ idade < 55
+- idoso: idade ≥ 55
+
+## 10. Exercício - Manipulação de Dados
+
+3. Escolha uma das duas opções abaixo para explorar seus dados:
+
+Agrupar por faixa etária, ou
+Agrupar por gênero
+
+4. A partir desse agrupamento, produza um gráfico que resuma a informação (por exemplo: média de IMC por grupo, distribuição de idades, contagem de indivíduos etc.). Sinta-se livre para escolher o tipo de gráfico.
+
+Você pode realizar o exercício na linguagem de sua escolha (R, Python ou Julia), aplicando os conceitos de criação, transformação e visualização de dados discutidos em aula.
